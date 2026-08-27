@@ -1,0 +1,15 @@
+sterm
+sterm.exe
+*.o
+*.obj
+fpga/*.out
+fpga/*.vcd
+fpga/*.bit
+fpga/*.rpt
+fpga/*.jou
+fpga/*.log
+fpga/.Xil/
+fpga/*.cache/
+fpga/*.runs/
+fpga/*.sim/
+_loop.log
