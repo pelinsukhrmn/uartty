@@ -1,0 +1,44 @@
+name: ci
+
+on: [push, pull_request]
+
+jobs:
+  posix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: make
+      - run: python3 test_pty.py
+
+  windows-cross:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y gcc-mingw-w64-x86-64-win32
+      - run: make CROSS=x86_64-w64-mingw32-
+      - uses: actions/upload-artifact@v4
+        with: { name: sterm-exe, path: sterm.exe }
+
+  # Native Windows is the only place the CLI surface can be checked for real.
+  # It does not need a COM port, and it catches the class of bug where a
+  # message goes to a handle that was never opened and vanishes silently.
+  windows-native:
+    runs-on: windows-latest
+    defaults:
+      run: { shell: msys2 {0} }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          install: mingw-w64-x86_64-gcc make
+      - run: make
+      - run: python test_win32_cli.py sterm.exe
+        shell: pwsh
+
+  fpga:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y iverilog
+      - run: cd fpga && ./sim.sh
